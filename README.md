@@ -1,37 +1,54 @@
-## Snowplow-local
-
-## Licensing
-
-What licenses does this use?
+# Snowplow-local
 
 ## Background
 
+snowplow-local is designed to provide a local development environment that makes it fast and easy to spin up an entire Snowplow pipeline that more closely resembles a production (AWS) environment.
+
 - How is this different from Snowplow Micro?
+
+TODO
 
 - How is this different from Snowplow Mini?
 
+TODO
 
-## Instructions
+## Getting started
 
 1. Clone this repo
-2. `cd` into this folder
-3. Make sure you have `docker-compose` installed
+2. `cd` into the cloned folder
+3. Make sure you have `docker` and `docker-compose` installed
 4. Run everything with `docker-compose up`
 5. Open up a page to fire test events in your [browser](http://localhost:8082) using the Javascript tracker.
+
+## Services
+
+The collector runs on port 8080 and can be accessed at [http://localhost:8080](http://localhost:8080). When configuring any of your trackers you can use this as the collector URL.
+
+Iglu Server runs on port 8081 and can be accessed at [http://localhost:8081](http://localhost:8081). This is where you can upload your schemas and validate them. You can also point enrich directly at an existing Iglu repository that contains schemas by updating `iglu-client/resolver.json`.
+
+Grafana is used for metrics reporting and basic dashboarding and runs on port 3000 and can be accessed at [http://localhost:3000](http://localhost:3000). The default credentials are `admin:admin`. Graphite is used as the default data source so this does not require manual configuration - the collector and enricher will both emit statsd metrics here automatically.
+
+A basic website that can be used to fire test events can be accessed at [http://localhost:8082](http://localhost:8082). This is useful for testing your pipeline and ensuring that events are being collected correctly.
+
+Postgres runs on port 5432 - in general you shouldn't really need to use this for anything as it is the data store for Iglu schemas.
 
 ## Differences to a production pipeline
 
 This software is not designed to be run in production and is instead designed for a local experience.
 
-This includes statsd reporting intervals as well as caching settings for Iglu clients in order to more easily allow for patching without needing to clear caches.
+Some differences include statsd reporting intervals (shorter period than ordinary) as well as caching settings for Iglu clients in order to more easily allow for patching without needing to clear caches manually or reboot services.
 
 ## Configuring loaders
 
+By default good, bad and incomplete events are written to a SQLite database (`database/events.db`) for persistence beyond restarts. This is useful for debugging what events have occurred if you are not loading into a warehouse or lake.
+
+However, if you do want to load to a production target you can also do so.
+
 Loaders are configured using the `--profile` flag. Currently the following loaders are supported:
 
-[*] Snowflake streaming loader (`--profile snowflake-loader`)
-[*] Lake loader (Delta, Hudi & Iceberg) (`--profile lake-loader`)
-[*] BigQuery streaming loader (`--profile bigquery-loader`)
+[ * ] Snowflake streaming loader (`--profile snowflake-loader`)
+[ * ] Lake loader (Delta, Hudi & Iceberg) (`--profile lake-loader`)
+[ * ] BigQuery streaming loader (`--profile bigquery-loader`)
 
 If you would like to (optionally) run the Snowflake streaming loader as well you will need to run these steps.
 
@@ -56,7 +73,7 @@ As part of the enrichment process (to enable faster patching) the Iglu client us
 
 ## Configuring Iglu Server
 
-Iglu Server primarily uses sensible defaults with the exception of.
+Iglu Server primarily uses defaults with the exception of:
 `debug` which is set to true to aid in easier debugging (and exposes meta endpoints).
 `patchesAllowed` which allows schemas of the same version to be patched even if they already exist - this tends to be useful in a development context but it something to be avoided in production.
 
@@ -80,18 +97,18 @@ The syntax for this command may vary slightly depending on your shell.
 * Enrich 5.0.0
 * Iglu Server 0.12.1
 * Javascript tracker 3.23
-* Snowflake streaming loader 0.2.3
-* Lake loader 0.4.1
+* Snowflake streaming loader 0.2.4
+* Lake loader 0.5.0
 * BigQuery loader (2.0.0-rc10)
-* Snowbridge 2.4.1
+* Snowbridge 2.4.2
 
-Under the hood Localstack is used to simulate the AWS components - primarily used for service messaging (Kinesis and Dynamodb).
+Under the hood Localstack is used to simulate the AWS components - primarily used for service messaging (Kinesis and Dynamodb) including the communication between the collector and the enricher as well as checkpointing for KCL. Localstack also provides a mock S3 service that you can use if you wish to use the Lake Loader to write to S3 (which in turn uses the local filesystem rather than AWS S3).
 
 ## Monitoring
 
-This setup includes a Grafana dashboard that can be accessed at [http://localhost:3000](http://localhost:3000) with the default credentials of `admin:admin`. Most components will emit metrics to statsd and as a result become available in Grafana. A default Graphite source is setup for you so you should not need to connect this.
+This setup includes a Grafana instance that can be accessed at [http://localhost:3000](http://localhost:3000) with the default credentials of `admin:admin`. Most components will emit metrics to statsd and as a result become available in Grafana. A default Graphite source is setup for you so you should not need to connect this.
 
-Logs for components that write them (e.g., KPL, KCL) are written to Cloudwatch on Localstack.
+Logs for components that write them (e.g., collector, enrich) are written to Cloudwatch on Localstack.
 
 The storage for Grafana is mounted as a volume so you can persist any dashboards and data across restarts, rather than losing them on reboot!
 
@@ -126,9 +143,14 @@ WHERE
 
 If you'd like to fire some example incomplete events you can do so from the [kitchen sink page](http://localhost:8082).
 
-This currently has support for:
-- incorrect type
-
 ## Known issues
 
 The KCL, specifically within enrich has a pesty habit of being slow to 'steal' leases and start processing data on initial startup. Although events can be collected immediately it may take up to 60 seconds on subsequent startups for enrich to start enriching events. Once this period has passed everything works as per normal.
+
+## Licensing
+
+This software is licensed under the Snowplow Limited Use License Agreement. For more information please see the [LICENSE.md](LICENSE.md) file.
+
+## Disclaimer
+
+Disclaimer: This is not an officially supported Snowplow product.

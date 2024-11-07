@@ -7,7 +7,7 @@ awslocal kinesis create-stream --stream-name collector-bad --region ap-southeast
 # enrichment
 awslocal kinesis create-stream --stream-name enriched-good --region ap-southeast-2 --shard-count 1 # enriched good
 awslocal kinesis create-stream --stream-name enriched-bad --region ap-southeast-2 --shard-count 1 # enriched bad
-awslocal kinesis create-stream --stream-name enriched-incomplete --region ap-southeast-2 --shard-count 1
+awslocal kinesis create-stream --stream-name enriched-incomplete --region ap-southeast-2 --shard-count 1 # enriched incomplete
 awslocal kinesis create-stream --stream-name pii --region ap-southeast-2 --shard-count 1 # optional PII stream
 
 # loaders

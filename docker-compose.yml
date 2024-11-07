@@ -3,8 +3,8 @@ services:
     container_name: "snowplow-localstack"
     image: localstack/localstack:3.8.1
     ports:
-      - "127.0.0.1:4566:4566"            # LocalStack Gateway
-      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+      - "4566:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # external services port range
     environment:
       # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
       - DEBUG=${DEBUG:-0}
@@ -31,6 +31,7 @@ services:
       - "./collector/config.hocon:/snowplow/collector/config.hocon"
     extra_hosts:
       - "localhost.localstack.cloud:host-gateway"
+      - "host.docker.internal:host-gateway"
 
   enrich:
     container_name: "snowplow-enrich"
@@ -87,7 +88,7 @@ services:
   iglu-server:
     container_name: "snowplow-iglu-server"
     image: snowplow/iglu-server:0.12.1-distroless
-    command: ["--config", "/snowplow/iglu/config.hocon"]
+    command: ["--config", "/snowplow/iglu-server/config.hocon"]
     depends_on:
       - iglu-server-setup
     ports:
@@ -96,7 +97,7 @@ services:
       - "IGLU_SUPER_API_KEY=deadbeef-dead-beef-dead-beefdeadbeef"
       - "IGLU_DB_PASSWORD=notsosecret"
     volumes:
-      - "./iglu-server:/snowplow"
+      - "./iglu-server:/snowplow/iglu-server"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -188,93 +189,93 @@ services:
     extra_hosts:
       - "localhost.localstack.cloud:host-gateway"
 
-  # snowflake-incomplete-loader:
-  #   container_name: snowflake-streaming-loader-incomplete
-  #   image: snowplow/snowflake-loader-kinesis:0.2.4-distroless
-  #   command: ["--config", "/loaders/snowflake_loader_kinesis_incomplete.hocon"]
-  #   depends_on:
-  #     - enrich
-  #   volumes:
-  #     - "./loaders/snowflake_loader_kinesis_incomplete.hocon:/loaders/snowflake_loader_kinesis_incomplete.hocon"
-  #   profiles: [snowflake-incomplete-loader]
-  #   environment:
-  #     - "AWS_ACCESS_KEY_ID=localstack"
-  #     - "AWS_SECRET_ACCESS_KEY=doesntmatter"
-  #     - "AWS_REGION=ap-southeast-2"
-  #     # the below are set in .env
-  #     - "SNOWFLAKE_URL=${SNOWFLAKE_URL}"
-  #     - "SNOWFLAKE_USERNAME=${SNOWFLAKE_USERNAME}"
-  #     - "SNOWFLAKE_PRIVATE_KEY=${SNOWFLAKE_PRIVATE_KEY}"
-  #     - "SNOWFLAKE_DATABASE=${SNOWFLAKE_DATABASE}"
-  #     - "SNOWFLAKE_SCHEMA=${SNOWFLAKE_SCHEMA}"
-  #     - "SNOWFLAKE_TABLE=${SNOWFLAKE_INCOMPLETE_TABLE}"
+  snowflake-incomplete-loader:
+    container_name: snowflake-streaming-loader-incomplete
+    image: snowplow/snowflake-loader-kinesis:0.2.4-distroless
+    command: ["--config", "/loaders/snowflake_loader_kinesis_incomplete.hocon"]
+    depends_on:
+      - enrich
+    volumes:
+      - "./loaders/snowflake_loader_kinesis_incomplete.hocon:/loaders/snowflake_loader_kinesis_incomplete.hocon"
+    profiles: [snowflake-incomplete-loader]
+    environment:
+      - "AWS_ACCESS_KEY_ID=localstack"
+      - "AWS_SECRET_ACCESS_KEY=doesntmatter"
+      - "AWS_REGION=ap-southeast-2"
+      # the below are set in .env
+      - "SNOWFLAKE_URL=${SNOWFLAKE_URL}"
+      - "SNOWFLAKE_USERNAME=${SNOWFLAKE_USERNAME}"
+      - "SNOWFLAKE_PRIVATE_KEY=${SNOWFLAKE_PRIVATE_KEY}"
+      - "SNOWFLAKE_DATABASE=${SNOWFLAKE_DATABASE}"
+      - "SNOWFLAKE_SCHEMA=${SNOWFLAKE_SCHEMA}"
+      - "SNOWFLAKE_TABLE=${SNOWFLAKE_INCOMPLETE_TABLE}"
 
-  #   extra_hosts:
-  #     - "localhost.localstack.cloud:host-gateway"
+    extra_hosts:
+      - "localhost.localstack.cloud:host-gateway"
 
-  # lake-loader:
-  #   container_name: lake-loader
-  #   image: snowplow/lake-loader-aws:0.5.0
-  #   command: ["--config", "/loaders/lake_loader_config.hocon", "--iglu-config", "/snowplow/iglu-client/iglu_resolver.json"]
-  #   depends_on:
-  #     - enrich
-  #     - iglu-server
-  #   volumes:
-  #     - "./loaders/lake_loader_config.hocon:/loaders/lake_loader_config.hocon"
-  #     - "./iglu-client:/snowplow/iglu-client"
-  #   profiles: [lake-loader]
-  #   environment:
-  #     - "AWS_ACCESS_KEY_ID=localstack"
-  #     - "AWS_SECRET_ACCESS_KEY=doesntmatter"
-  #     - "AWS_REGION=ap-southeast-2"
-  #     - "AWS_ENDPOINT_S3=http://localhost.localstack.cloud:4566"
-  #     - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
+  lake-loader:
+    container_name: lake-loader
+    image: snowplow/lake-loader-aws:0.5.0
+    command: ["--config", "/loaders/lake_loader_config.hocon", "--iglu-config", "/snowplow/iglu-client/iglu_resolver.json"]
+    depends_on:
+      - enrich
+      - iglu-server
+    volumes:
+      - "./loaders/lake_loader_config.hocon:/loaders/lake_loader_config.hocon"
+      - "./iglu-client:/snowplow/iglu-client"
+    profiles: [lake-loader]
+    environment:
+      - "AWS_ACCESS_KEY_ID=localstack"
+      - "AWS_SECRET_ACCESS_KEY=doesntmatter"
+      - "AWS_REGION=ap-southeast-2"
+      - "AWS_ENDPOINT_S3=http://localhost.localstack.cloud:4566"
+      - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
 
-  #   extra_hosts:
-  #     - "localhost.localstack.cloud:host-gateway"
+    extra_hosts:
+      - "localhost.localstack.cloud:host-gateway"
 
-  # bigquery-loader:
-  #   container_name: bigquery-loader
-  #   image: snowplow/bigquery-loader-kinesis:2.0.0-rc10-distroless
-  #   command: ["--config", "/loaders/bigquery_loader_config.hocon", "--iglu-config", "/snowplow/iglu-client/iglu_resolver.json"]
-  #   depends_on:
-  #     - enrich
-  #     - iglu-server
-  #   volumes:
-  #     - "./loaders/bigquery_loader_config.hocon:/loaders/bigquery_loader_config.hocon"
-  #     - "./iglu-client:/snowplow/iglu-client"
-  #   profiles: [bigquery-loader]
-  #   environment:
-  #     - "GCP_PROJECT_ID=${GCP_PROJECT_ID}"
-  #     - "BIGQUERY_DATASET=${BIGQUERY_DATASET}"
-  #     - "BIGQUERY_TABLE=${BIGQUERY_TABLE}"
-  #     - "SERVICE_ACCOUNT_CREDENTIALS=${SERVICE_ACCOUNT_CREDENTIALS}"
-  #     - "AWS_ACCESS_KEY_ID=localstack"
-  #     - "AWS_SECRET_ACCESS_KEY=doesntmatter"
-  #     - "AWS_REGION=ap-southeast-2"
-  #     - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
-  #     - "AWS_DEFAULT_REGION=ap-southeast-2"
-  #     - "DEFAULT_REGION=ap-southeast-2"
+  bigquery-loader:
+    container_name: bigquery-loader
+    image: snowplow/bigquery-loader-kinesis:2.0.0-rc10-distroless
+    command: ["--config", "/loaders/bigquery_loader_config.hocon", "--iglu-config", "/snowplow/iglu-client/iglu_resolver.json"]
+    depends_on:
+      - enrich
+      - iglu-server
+    volumes:
+      - "./loaders/bigquery_loader_config.hocon:/loaders/bigquery_loader_config.hocon"
+      - "./iglu-client:/snowplow/iglu-client"
+    profiles: [bigquery-loader]
+    environment:
+      - "GCP_PROJECT_ID=${GCP_PROJECT_ID}"
+      - "BIGQUERY_DATASET=${BIGQUERY_DATASET}"
+      - "BIGQUERY_TABLE=${BIGQUERY_TABLE}"
+      - "SERVICE_ACCOUNT_CREDENTIALS=${SERVICE_ACCOUNT_CREDENTIALS}"
+      - "AWS_ACCESS_KEY_ID=localstack"
+      - "AWS_SECRET_ACCESS_KEY=doesntmatter"
+      - "AWS_REGION=ap-southeast-2"
+      - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
+      - "AWS_DEFAULT_REGION=ap-southeast-2"
+      - "DEFAULT_REGION=ap-southeast-2"
 
-  #   extra_hosts:
-  #     - "localhost.localstack.cloud:host-gateway"
+    extra_hosts:
+      - "localhost.localstack.cloud:host-gateway"
 
-  # snowbridge:
-  #   container_name: snowbridge
-  #   image: snowplow/snowbridge:2.4.2-aws-only
-  #   command: ["/opt/snowplow/snowbridge"]
-  #   depends_on:
-  #     - enrich
-  #   volumes:
-  #     - "./snowbridge:/snowbridge"
-  #   profiles: [snowbridge]
-  #   environment:
-  #     - "AWS_REGION=ap-southeast-2"
-  #     - "AWS_ACCESS_KEY_ID=localstack"
-  #     - "AWS_SECRET_ACCESS_KEY=doesntmatter"
-  #     - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
-  #     - "SNOWBRIDGE_CONFIG_FILE=/snowbridge/config.hcl"
-  #     - "ACCEPT_LIMITED_USE_LICENSE=yes"
-  #     - "START_TIMESTAMP=${START_TIMESTAMP}"
-  #   extra_hosts:
-  #     - "localhost.localstack.cloud:host-gateway"
+  snowbridge:
+    container_name: snowbridge
+    image: snowplow/snowbridge:2.4.2-aws-only
+    command: ["/opt/snowplow/snowbridge"]
+    depends_on:
+      - enrich
+    volumes:
+      - "./snowbridge:/snowbridge"
+    profiles: [snowbridge]
+    environment:
+      - "AWS_REGION=ap-southeast-2"
+      - "AWS_ACCESS_KEY_ID=localstack"
+      - "AWS_SECRET_ACCESS_KEY=doesntmatter"
+      - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
+      - "SNOWBRIDGE_CONFIG_FILE=/snowbridge/config.hcl"
+      - "ACCEPT_LIMITED_USE_LICENSE=yes"
+      - "START_TIMESTAMP=${START_TIMESTAMP}"
+    extra_hosts:
+      - "localhost.localstack.cloud:host-gateway"

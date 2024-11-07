@@ -285,13 +285,7 @@
     # increasing this could help with throughput in case of adapters with high latency
     "maxConnections": 10,
     # a list of remote adapter configs
-    "configs": [
-      {
-        "vendor": "com.example",
-        "version": "v1",
-        "url": "https://remote-adapter.com"
-      }
-    ]
+    "configs": []
   }
 
   "monitoring": {

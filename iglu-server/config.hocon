@@ -66,7 +66,7 @@
   # optional configuration for swagger api documentation
   "swagger": {
     # optional 'baseUrl': customise the api base url. Helpful for when running iglu-server behind a proxy server.
-    "baseUrl": "/custom/prefix"
+    "baseUrl": ""
   }
 
   # Enable additional debug endpoint to output all internal state
