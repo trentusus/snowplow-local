@@ -1,0 +1,109 @@
+{
+  # Full license text available in LICENSE.md
+  "license": {
+    "accept": true
+  }
+
+  # Http server settings
+  "repoServer": {
+    "interface": "0.0.0.0"
+    "port": 8080
+
+    # How long a connection can remain idle before the connection is timed out and disconnected.  Default 60 seconds.
+    "idleTimeout": 60 seconds
+
+    # The maximum number of client connections that may be active at any time. Default 1024.
+    "maxConnections": 1024
+    "maxPayloadSize": 100000
+  }
+
+  # Required backend storage configuration
+  "database": {
+    # type 'postgres' contains configuration options for the postgres instance the server is using
+    # type 'dummy' is in-memory only storage
+    "type": "postgres"
+
+    # postgres-specific options
+    "host": "host.docker.internal"
+    "port": 5433 # optional
+    "dbname": "igludb"
+    "username": "postgres"
+    "password": ${?IGLU_DB_PASSWORD}
+    "driver": "org.postgresql.Driver" # optional
+
+
+    # Configure a connection pool
+    pool: {
+      # type 'hikari' configures a HikariCP connection pool. This is recommended for production deployments.
+      "type": "hikari"
+      "maximumPoolSize":   5            # optional, maximum number of connections in the pool
+      "connectionTimeout": 30 seconds   # optional
+      "maxLifetime":       1800 seconds # optional, millis
+      "minimumIdle":       5            # optional, minimum number of idle connections
+
+      # Configure the thread pool used for awaiting connection to the database
+      connectionPool: {
+        "type": "fixed"
+        "size": 4
+      }
+
+      # Configure the thread pool used for blocking JDBC operations
+      "transactionPool": "cached"
+      
+
+      # type 'nopool' is an alternative to 'hikari'. It means no upper bound on the number of connections.
+      # type = "nopool"
+      # Optionally configure execution context used for blocking operations. Default is 'cached'.
+      # threadPool = "cached"
+
+    }
+
+    # Optional, whether to ping postgres during startup, and fail immediately if postgres is not available.
+    # True is a good option for production pipelines, so the instance is not considered healthy until the postgres connection is healthy.
+    "enableStartupChecks": true
+  }
+
+  # optional configuration for swagger api documentation
+  "swagger": {
+    # optional 'baseUrl': customise the api base url. Helpful for when running iglu-server behind a proxy server.
+    "baseUrl": "/custom/prefix"
+  }
+
+  # Enable additional debug endpoint to output all internal state
+  "debug": true
+
+  # If true, schemas sent to the /api/schemas endpoint will overwrite existing ones rather than
+  # be skipped if a schema with the same key already exists. Optional, default is False.
+  "patchesAllowed": true
+
+  # Optional webhooks configuration
+  "webhooks": {
+    # Enable webhooks that will be called when a schema is published or updated
+    # with a vendor that matches the specified prefixes, allowing to use the
+    # http GET (by default) or POST method.
+    "schemaPublished": [
+      # {
+      #   uri = "https://example.com/endpoint"
+      # },
+      # {
+      #   uri = "https://example2.com/endpoint",
+      #   vendorPrefixes = ["com", "org.acme", "org.snowplow"]
+      # }
+      # {
+      #   uri = "https://example.com/endpoint",
+      #   usePost = true
+      # },
+    ]
+  }
+
+  # Optional. Set a super api key with permission to read/write any schema, and add other api keys.
+  "superApiKey": ${?IGLU_SUPER_API_KEY}
+
+  # Configures how long the server should pause after receiving a sigterm before starting the server shutdown.
+  # During this period the server continues to accept new connections and respond to requests.
+  preTerminationPeriod = 1 seconds
+
+  # During the preTerminationPeriod, the server can be configured to return 503s on the /health endpoint
+  # Can be helpful for removing the server from a load balancer's targets.
+  preTerminationUnhealthy = false
+}

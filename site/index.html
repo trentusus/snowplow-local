@@ -1,0 +1,721 @@
+<html>
+<head>
+    <title>Welcome</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <!-- Snowplow starts plowing -->
+    <script type="text/javascript">
+
+        ;(function(p,l,o,w,i,n,g){if(!p[i]){p.GlobalSnowplowNamespace=p.GlobalSnowplowNamespace||[];
+        p.GlobalSnowplowNamespace.push(i);p[i]=function(){(p[i].q=p[i].q||[]).push(arguments)
+        };p[i].q=p[i].q||[];n=l.createElement(o);g=l.getElementsByTagName(o)[0];n.async=1;
+        n.src=w;g.parentNode.insertBefore(n,g)}}(window,document,"script","https://cdn.jsdelivr.net/npm/@snowplow/javascript-tracker@3.23/dist/sp.min.js","snowplow"));
+
+        window.snowplow('newTracker', 'g', 'localhost:8080', { // Initialise a tracker
+          encodeBase64: false, // Default is true
+          appId: 'snowplow-local', // Site ID can be anything you want. Set it if you're tracking more than one site in this account
+          platform: 'web',
+          contexts: {
+            webPage: true,
+            performanceTiming: true
+          }
+        });
+
+
+        // load plugins
+        window.snowplow(
+            'addPlugin',
+            'https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-enhanced-consent@latest/dist/index.umd.min.js',
+            ['snowplowEnhancedConsentTracking', 'EnhancedConsentPlugin']
+        );
+
+        window.snowplow(
+            'addPlugin',
+            'https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-web-vitals@latest/dist/index.umd.min.js',
+            ['snowplowWebVitals', 'WebVitalsPlugin']
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-link-click-tracking@latest/dist/index.umd.min.js",
+            ["snowplowLinkClickTracking", "LinkClickTrackingPlugin"]
+        );
+
+        window.snowplow(
+            'addPlugin',
+            'https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-button-click-tracking@latest/dist/index.umd.min.js',
+            ['snowplowButtonClickTracking', 'ButtonClickTrackingPlugin']
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-form-tracking@latest/dist/index.umd.min.js",
+            ["snowplowFormTracking", "FormTrackingPlugin"]
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-enhanced-ecommerce@latest/dist/index.umd.min.js",
+            ["snowplowEnhancedEcommerce", "EnhancedEcommercePlugin"]
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-ad-tracking@latest/dist/index.umd.min.js",
+            ["snowplowAdTracking", "AdTrackingPlugin"]
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-performance-navigation-timing@latest/dist/index.umd.min.js",
+            ["snowplowPerformanceNavigationTiming", "PerformanceNavigationTimingPlugin"]
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-site-tracking@latest/dist/index.umd.min.js",
+            ["snowplowSiteTracking", "SiteTrackingPlugin"]
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-timezone@latest/dist/index.umd.min.js",
+            ["snowplowTimezone", "TimezonePlugin"]
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-geolocation@latest/dist/index.umd.min.js",
+            ["snowplowGeolocation", "GeolocationtPlugin"],
+            [true] // Enable at load
+        );
+
+        window.snowplow(
+            'addPlugin',
+            'https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-event-specifications@latest/dist/index.umd.min.js',
+            ['eventSpecifications', 'EventSpecificationsPlugin']
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-client-hints@latest/dist/index.umd.min.js",
+            ["snowplowClientHints", "ClientHintsPlugin"]
+        );
+
+        window.snowplow('addPlugin', 
+            "https://cdn.jsdelivr.net/npm/@snowplow/browser-plugin-privacy-sandbox@latest/dist/index.umd.min.js",
+            ["snowplowPrivacySandbox", "PrivacySandboxPlugin"]
+        );
+
+        snowplow('enableLinkClickTracking', { pseudoClicks: true });
+
+        // button clicks
+        window.snowplow('enableButtonClickTracking');
+
+        // form tracking
+        snowplow('enableFormTracking', {
+            options: {
+                events: ['submit_form', 'focus_form', 'change_form']
+            },
+        });
+
+
+        snowplow('enableActivityTracking', { 
+            minimumVisitLength: 5, 
+            heartbeatDelay: 5
+            });
+
+        snowplow("trackConsentAllow:g", {
+            consentScopes: ["necessary", "marketing", "personalization"],
+            basisForProcessing: "consent",
+            consentUrl: "https://www.example.com/",
+            consentVersion: "1.0",
+            domainsApplied: ["https://www.example.com/"],
+            gdprApplies: true
+        });
+
+        snowplow('trackPageView');
+
+        const socket = new WebSocket('ws://localhost:8083');
+        socket.binaryType = 'blob';
+        socket.onopen = () => {
+            console.log('WebSocket connection established.');
+        };
+
+        socket.onmessage = (event) => {
+            const message = event.data;
+            console.log('Received message:', message, event);
+            console.log(event);
+            // a promise is returned here so we need to handle the promise appropriately
+            const messagePromise = Promise.resolve(event);
+
+            messagePromise.then((resolvedMessage) => {
+                console.log('Resolved message:', resolvedMessage, resolvedMessage.data, event);
+            })
+        // Handle the incoming message here
+        };
+
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        socket.onclose = (event) => {
+        if (event.wasClean) {
+            console.log('WebSocket connection closed cleanly.');
+        } else {
+            console.error('WebSocket connection closed unexpectedly.');
+        }
+        console.log('Close code:', event.code);
+        console.log('Reason:', event.reason);
+        };
+
+        function handleMessage(message){
+
+        }
+
+        function fireApplicationError(){
+            let payload = {
+                "programmingLanguage": "JAVA",
+                "message": "java.lang.OutOfMemoryError error raised",
+                "exceptionName": "java.lang.OutOfMemoryError",
+                "isFatal": true,
+                "threadName": "main",
+                "threadId": 1,
+                "lineNumber": 10,
+                "className": "android.graphics.BitmapFactory",
+                "stackTrace": "java.lang.OutOfMemoryError"
+            }
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/application_error/jsonschema/1-0-2',
+                    data: payload
+                }
+            });
+        }
+
+        function trackAdImpression(){
+            snowplow('trackAdImpression', {
+                impressionId: '67965967893',
+                costModel: 'cpm', // 'cpa', 'cpc', or 'cpm'
+                cost: 5.5,
+                targetUrl: 'http://www.example.com',
+                bannerId: '23',
+                zoneId: '7',
+                advertiserId: '201',
+                campaignId: '12'
+            });
+        }
+
+        function trackAdClick(){
+            snowplow('trackAdClick', {
+                targetUrl: 'http://www.example.com',
+                clickId: '12243253',
+                costModel: 'cpm',
+                cost: 2.5,
+                bannerId: '23',
+                zoneId: '7',
+                impressionId: '67965967893', // the same as in trackAdImpression
+                advertiserId: '201',
+                campaignId: '12'
+            }
+            );
+        }
+
+        function trackAdConversion(){
+            snowplow('trackAdConversion', {
+                conversionId: '743560297',
+                costModel: 'cpa',
+                cost: 10,
+                category: 'ecommerce',
+                action: 'purchase',
+                property: '',
+                initialValue: 99,
+                advertiserId: '201',
+                campaignId: '12'
+            });
+        }
+
+        function trackTimingEvent(){
+            snowplow('trackTiming', {
+                category: 'load',
+                variable: 'map_loaded',
+                timing: 50,
+                label: 'Map loading time'
+            });
+        }
+        
+        function trackConsentEvent(event){
+            if (event !== 'trackCmpVisible') {
+                window.snowplow(event + ":g", {
+                    consentScopes: ["necessary", "marketing", "personalization"],
+                    basisForProcessing: "consent",
+                    consentUrl: "https://www.example.com/",
+                    consentVersion: "1.0",
+                    domainsApplied: ["https://www.example.com/"],
+                    gdprApplies: true
+                });
+            } else {
+                window.snowplow(event + ":g", {
+                    elapsedTime: 0
+                });
+            }
+        }
+
+        function trackCmpVisible(){
+        }
+
+        function trackSiteSearch(){
+            snowplow('trackSiteSearch', {
+                terms: ['unified', 'log'],
+                filters: {'category': 'books', 'sub-category': 'non-fiction'},
+                totalResults: 14,
+                pageResults: 8
+            });
+        }
+
+        function trackSocialInteraction(){
+            snowplow('trackSocialInteraction', {
+                action: 'like',
+                network: 'facebook',
+                target: 'http://www.example.com'
+            });
+        }
+
+        function trackEnhancedEcommerceAction(action){
+            snowplow('trackEnhancedEcommerceAction', {
+                action: action
+            });
+        }
+
+        // incomplete events
+
+        function trackIncompleteAdClick(){
+            // tracks using incorrect type
+            snowplow('trackAdClick', {
+                targetUrl: 'http://www.example.com',
+                clickId: 123
+            }
+            );
+        }
+
+        function trackIncompleteAdClickRequired(){
+            // tracks using incorrect type
+            snowplow('trackAdClick', {
+                clickId: 'click123'
+            }
+            );
+        }
+
+        function trackIncompleteAdditional(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/application_error/jsonschema/1-0-2',
+                    data: {
+                        "programmingLanguage": "JAVA",
+                        "message": "java.lang.OutOfMemoryError error raised",
+                        "additionalProperty": "not allowed"
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteAllOf(){
+            // no examples in Iglu central
+        }
+
+        function trackIncompleteEnum(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/application_error/jsonschema/1-0-2',
+                    data: {
+                        "programmingLanguage": "NOTREAL",
+                        "message": "java.lang.OutOfMemoryError error raised",
+                        "additionalProperty": "not allowed"
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteFormat(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:nl.basjes/yauaa_context/jsonschema/1-0-3',
+                    data: {
+                        "deviceClass": "Desktop",
+                        "agentInformationEmail": "notavalidemail"
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteMaximum(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/geolocation_context/jsonschema/1-1-0',
+                    data: {
+                        "latitude": 91,
+                        "longitude": 100
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteMinimum(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/geolocation_context/jsonschema/1-1-0',
+                    data: {
+                        "latitude": -91,
+                        "longitude": 100
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteMaxItems(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.datamodeling/config/jsonschema/1-0-0',
+                    data: {
+                            "enabled": false,
+                            "lockType": "soft",
+                            "storage": "Default",
+                            "playbooks": [{"playbook": "a", "dependsOn": ["a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a", "a"]}]
+                        }
+                }
+            });
+        }
+
+        function trackIncompleteMinItems(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/consent_preferences/jsonschema/1-0-0',
+                    data: {
+                            "eventType": "deny_all",
+                            "consentVersion": "1.0.0",
+                            "domainsApplied": ["none"],
+                            "consentScopes": [],
+                            "consentUrl": "https://www.example.com/privacy",
+                            "basisForProcessing": "consent"
+                        }
+                }
+            });
+        }
+
+        // buttons required for functions below
+        function trackIncompleteMaxLength(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/mobile_context/jsonschema/1-0-3',
+                    data: {
+                            "osType": "",
+                            "osVersion": "",
+                            "deviceManufacturer": "",
+                            "deviceModel": "",
+                            "language": "Australian English",
+                        }
+                }
+            });
+        }
+
+        function trackIncompleteMaxProperties(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/user_agent_utils_config/jsonschema/1-0-0',
+                    data: {
+                            "name": "",
+                            "vendor": "",
+                            "enabled": false,
+                            "parameters": {
+                                "noparamsallowed": true
+                            }
+                        }
+                }
+            });
+        }
+
+        function trackIncompleteMinLength(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/link_click/jsonschema/1-0-1',
+                    data: {
+                            "targetUrl": ""
+                        }
+                }
+            });
+        }
+
+        function trackIncompleteMinProperties(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/screen_view/jsonschema/1-0-0',
+                    data: {}
+                }
+            });
+        }
+
+        function trackIncompleteMultipleOf(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.google.analytics.ecommerce/item/jsonschema/1-0-0',
+                    data: {
+                        "price": "1.111"
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteOneOf(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.iglu/resolver-config/jsonschema/1-0-0',
+                    data: {
+                        "cacheSize": 0,
+                        "repositories": [
+                            {
+                                "name": "",
+                                "priority": 0,
+                                "vendorPrefixes": [""],
+                                "connection": {
+                                    "garbage": true
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+        }
+
+        function trackIncompletePattern(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/contexts/jsonschema/1-0-1',
+                    data: [
+                        {
+                            "schema": "notvalid",
+                            "data": {}
+                        }
+                    ]
+                    }
+                }
+            )
+        }
+
+        function trackIncompleteRequired(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:org.whatwg/video_element/jsonschema/1-0-0',
+                    data: {
+                        "videoHeight": 123
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteUnionType(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/mobile_context/jsonschema/1-0-0',
+                    data: {
+                        "osType": "",
+                        "osVersion": "",
+                        "deviceManufacturer": "",
+                        "deviceModel": "",
+                        "carrier": 6
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteFormat(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.oss/oss_context/jsonschema/1-0-1',
+                    data: {
+                        "appGeneratedId": "123"
+                    }
+                }
+            });
+        }
+
+        function trackIncompleteCoreEvent(){
+            snowplow('trackPageView', {
+                timestamp: { type: 'ttm', value: -1 }
+            });
+        }
+
+        function trackInvalidContextandEvent(){
+            snowplow('trackSelfDescribingEvent', {
+                event: {
+                    schema: 'iglu:com.snowplowanalytics.snowplow/link_click/jsonschema/1-0-1',
+                    data: {
+                            "targetUrl": ""
+                        }
+                },
+                context: [
+                    {
+                        schema: 'iglu:com.snowplowanalytics.snowplow/consent_preferences/jsonschema/1-0-0',
+                        data: {
+                            "eventType": "deny_all",
+                            "consentVersion": "1.0.0",
+                            "domainsApplied": ["none"],
+                            "consentScopes": [],
+                            "consentUrl": "https://www.example.com/privacy",
+                            "basisForProcessing": "consent"
+                        }
+                    }
+                ]
+            });
+        }
+
+        function pushSchema(){
+            // checks if the "helpful" schema exists
+            // otherwises pushes it to the Iglu server for running
+            // additional validations
+            // iglu server runs on 8081
+            
+
+            // TODO: example post fetch request
+            fetch('http://localhost:8081/api/schemas', {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                    'apikey': 'deadbeef-dead-beef-dead-beefdeadbeef'
+                },
+                body: JSON.stringify({
+                    "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+                    "description": "Schema for an Acme Inc ad click event",
+                    "self": {
+                        "vendor": "com.acme",
+                        "name": "pattern",
+                        "format": "jsonschema",
+                        "version": "1-0-0"
+                    },
+                    "type": "object",
+                    "minProperties": 1,
+                    "patternProperties": {
+                        "^iglu:": {
+                        "type": "array",
+                        }
+                    },
+                    "additionalProperties": false
+                    })
+            })
+        }
+
+    </script>
+    <!-- Snowplow stops plowing -->
+
+  
+
+
+</head>
+
+<body>
+    This page enables page views and page pings.
+
+    <p>
+        The collector is available at: http://localhost:8080
+    </p>
+    <p>
+        Iglu server is available at: http://localhost:8081
+    </p>
+
+    <h1>Events</h1>
+
+    
+    <a href="#">Link click</a>
+
+
+    <h3>Form tracking events</h3>
+    <form id="sample">
+        <input type="text" name="name" placeholder="Name">
+        <input type="email" name="email" placeholder="Email">
+        <button type="submit">Submit</button>
+    </form>
+
+    <h3>Ecommerce (enhanced)</h3>
+
+    <button onClick="trackEnhancedEcommerceAction('click')">Click</button>
+    <button onClick="trackEnhancedEcommerceAction('detail')">Detail</button>
+    <button onClick="trackEnhancedEcommerceAction('add')">Add</button>
+    <button onClick="trackEnhancedEcommerceAction('remove')">Remove</button>
+    <button onClick="trackEnhancedEcommerceAction('checkout')">Checkout</button>
+    <button onClick="trackEnhancedEcommerceAction('checkout_option')">Checkout option</button>
+    <button onClick="trackEnhancedEcommerceAction('purchase')">Purchase</button>
+    <button onClick="trackEnhancedEcommerceAction('refund')">Refund</button>
+    <button onClick="trackEnhancedEcommerceAction('promo_click')">Promo click</button>
+    <button onClick="trackEnhancedEcommerceAction('view')">View</button>
+
+    snowplow('trackEnhancedEcommerceAction', {
+        action: 'refund'
+      });
+      <!-- possible actions: click, detail, add, remove, checkout, checkout_option, purchase, refund, promo_click, view -->
+
+    <h3>Campaigns and UTM parameters</h3>
+    <a href="?utm_source=google&utm_medium=cpc&utm_campaign=summer_sale">Click this link to generate a URL containing UTM params</a>
+
+    <h3>Ad tracking</h3>
+
+    <!-- impression, click, conversion -->
+
+    <button onClick="trackAdImpression()">Ad impression</button>
+    <button onClick="trackAdClick()">Ad click</button>
+    <button onClick="trackAdConversion()">Ad conversion</button>
+
+    <h3>Core web vitals</h3>
+    <span>Core web vitals have been automatically enabled and will track on page refresh.</span>
+
+    <h3>Timings</h3>
+    <span>Performance navigation timing is automatically tracked on page refresh.</span>
+
+    <button onClick="trackTimingEvent()">Generic timing event</button>
+
+    <h3>Consent</h3>
+    <!-- trackConsentAllow, trackConsentSelected, trackConsentPending, trackConsentImplicit, trackConsentDeny, trackConsentExpired, trackConsentWidthdrawn, trackCmpVisible  -->
+
+    <button onClick="trackConsentEvent('trackConsentAllow')">Consent allow</button>
+    <button onClick="trackConsentEvent('trackConsentSelected')">Consent selected</button>
+    <button onClick="trackConsentEvent('trackConsentPending')">Consent pending</button>
+    <button onClick="trackConsentEvent('trackConsentImplicit')">Consent implicit</button>
+    <button onClick="trackConsentEvent('trackConsentDeny')">Consent deny</button>
+    <button onClick="trackConsentEvent('trackConsentExpired')">Consent expired</button>
+    <button onClick="trackConsentEvent('trackConsentWithdrawn')">Consent withdrawn</button>
+    <button onClick="trackConsentEvent('trackCmpVisible', {elapsedTime: 0})">CMP visible</button>
+
+    <h3>Geolocation</h3>
+    <span>This context is automatically captured when permission is requested (and granted) in your browser</span>
+
+    <h3>Application error</h3>
+    <button onClick="fireApplicationError()">Fire Application Error</button>
+
+    <h3>Site search</h3>
+    <button onClick="trackSiteSearch()">Track site search</button>
+
+    <h3>Social media</h3>
+    <button onClick="trackSocialInteraction()">Track social interaction</button>
+
+    <h3>Client hints</h3>
+    <span>This information is automatically tracked</span>
+
+    <h3>Privacy sandbox</h3>
+    <span>This information is automatically tracked (note, your browser will need to support the <a href="https://caniuse.com/mdn-api_document_browsingtopics">Topics / browsingTopics API</a>)</span>
+
+    <h3>Incomplete events</h3>
+    <button onClick="trackIncompleteAdClick()">Ad click (incorrect field type)</button>
+    <button onClick="trackIncompleteAdClickRequired()">Ad click (missing required field)</button>
+    <button onClick="trackIncompleteAdditional()">Additional property (not allowed)</button>
+    <button onClick="trackIncompleteEnum()">Enum failure</button>
+    <button onClick="trackIncompleteFormat()">Format failure (email)</button>
+    <button onClick="trackIncompleteMaximum()">Maximum (number) failure</button>
+    <button onClick="trackIncompleteMinimum()">Minimum (number) failure</button>
+    <button onClick="trackIncompleteMaxItems()">MaxItems (array) failure</button>
+    <button onClick="trackIncompleteMinItems()">MinItems (array) failure</button>
+    <button onClick="trackIncompleteMaxLength()">MaxLength (string) failure</button>
+    <button onClick="trackIncompleteMaxProperties()">MaxProperties (object) failure</button>
+    <button onClick="trackIncompleteMinLength()">MinLength (string) failure</button>
+    <button onClick="trackIncompleteMinProperties()">MinProperties (object) failure</button>
+    <button onClick="trackIncompleteMultipleOf()">MultipleOf (number) failure</button>
+    <button onClick="trackIncompleteOneOf()">OneOf (object) failure</button>
+    <button onClick="trackIncompletePattern()">Pattern (string) failure</button>
+    <button onClick="trackIncompleteRequired()">Required failure</button>
+    <button onClick="trackIncompleteUnionType()">Incorrect type (union type) failure</button>
+    <button onClick="trackIncompleteFormat()">Format failure</button>
+    <button onClick="trackIncompleteCoreEvent()">Core event failure</button>
+    <button onClick="trackInvalidContextandEvent()">Invalid context and event</button>
+
+    
+</body>
+
+</html>

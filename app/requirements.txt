@@ -1,0 +1,2 @@
+websockets
+snowplow_analytics_sdk==0.2.3

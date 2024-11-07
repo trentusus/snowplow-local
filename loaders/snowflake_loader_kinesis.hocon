@@ -1,0 +1,55 @@
+{
+  "input": {
+    "streamName": "enriched-good"
+    "customEndpoint": "http://localhost.localstack.cloud:4566"
+    "dynamodbCustomEndpoint": "http://localhost.localstack.cloud:4566"
+
+    "initialPosition": {
+        "type": "LATEST"
+    }
+    "retrievalMode": {
+        "type": "Polling"
+        "maxRecords": 500
+    }
+    "bufferSize": 1
+  }
+
+  "output": {
+
+    "good": {
+      "url": ${SNOWFLAKE_URL}
+      "user": ${SNOWFLAKE_USERNAME}
+      "privateKey": ${SNOWFLAKE_PRIVATE_KEY}
+      "database": ${SNOWFLAKE_DATABASE}
+      "schema": ${SNOWFLAKE_SCHEMA}
+      "table": ${SNOWFLAKE_TABLE}
+      "channel": "snowplow-good"
+    }
+
+    "bad": {
+      "streamName": "snowflake-loader-bad"
+    }
+  }
+
+  "batching": {
+    "maxBytes": 500
+    "maxDelay": "1 second"
+    "uploadConcurrency": 1
+  }
+
+  "monitoring": {
+    "statsd": {
+        "hostname": "host.docker.internal"
+        "port": 8125
+
+        # Required, how frequently to report metrics
+        "period": "10 seconds"
+
+        # Any key-value pairs to be tagged on every StatsD metric
+        "tags": {
+        }
+
+        "prefix": "snowplow.snowflake.loader"
+    }
+  }
+}
