@@ -1,5 +1,5 @@
 license {
-  accept = true
+  accept = env("ACCEPT_LICENSE")
 }
 
 source {

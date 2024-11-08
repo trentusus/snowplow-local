@@ -17,7 +17,7 @@
 collector {
   # Full license text available in LICENSE.md
   license {
-    accept = true
+    accept = ${ACCEPT_LICENSE}
   }
 
   # The collector runs as a web service specified on the following interface and port.
@@ -372,5 +372,5 @@ collector {
   preTerminationUnhealthy = false
 
   # The server's deadline for closing connections during graceful shutdown
-  terminationDeadline = 10 seconds
+  terminationDeadline = 1 seconds
 }

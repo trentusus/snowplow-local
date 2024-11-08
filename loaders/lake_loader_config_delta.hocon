@@ -1,6 +1,6 @@
 {
   "license": {
-    "accept": true
+    "accept": ${ACCEPT_LICENSE}
   },
 
   "input": {

@@ -1,7 +1,7 @@
 {
   # Full license text available in LICENSE.md
   "license": {
-    "accept": true
+    "accept": ${ACCEPT_LICENSE}
   }
 
   # Where to read collector payloads from

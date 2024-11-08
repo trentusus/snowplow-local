@@ -24,6 +24,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "AWS_REGION=ap-southeast-2"
       - "AWS_ACCESS_KEY_ID=localstack"
       - "AWS_SECRET_ACCESS_KEY=doesntmatter"
@@ -42,6 +43,7 @@ services:
       - iglu-server
     restart: always
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "AWS_REGION=ap-southeast-2"
       - "AWS_ACCESS_KEY_ID=localstack"
       - "AWS_SECRET_ACCESS_KEY=doesntmatter"
@@ -79,6 +81,7 @@ services:
     depends_on:
       - postgres
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "IGLU_DB_PASSWORD=notsosecret"
     volumes:
       - "./iglu-server:/snowplow/iglu-server"
@@ -94,6 +97,7 @@ services:
     ports:
       - "8081:8080"
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "IGLU_SUPER_API_KEY=deadbeef-dead-beef-dead-beefdeadbeef"
       - "IGLU_DB_PASSWORD=notsosecret"
     volumes:
@@ -175,6 +179,7 @@ services:
       - "./loaders/snowflake_loader_kinesis.hocon:/loaders/snowflake_loader_kinesis.hocon"
     profiles: [snowflake-loader]
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "AWS_ACCESS_KEY_ID=localstack"
       - "AWS_SECRET_ACCESS_KEY=doesntmatter"
       - "AWS_REGION=ap-southeast-2"
@@ -199,6 +204,7 @@ services:
       - "./loaders/snowflake_loader_kinesis_incomplete.hocon:/loaders/snowflake_loader_kinesis_incomplete.hocon"
     profiles: [snowflake-incomplete-loader]
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "AWS_ACCESS_KEY_ID=localstack"
       - "AWS_SECRET_ACCESS_KEY=doesntmatter"
       - "AWS_REGION=ap-southeast-2"
@@ -225,6 +231,7 @@ services:
       - "./iglu-client:/snowplow/iglu-client"
     profiles: [lake-loader]
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "AWS_ACCESS_KEY_ID=localstack"
       - "AWS_SECRET_ACCESS_KEY=doesntmatter"
       - "AWS_REGION=ap-southeast-2"
@@ -246,6 +253,7 @@ services:
       - "./iglu-client:/snowplow/iglu-client"
     profiles: [bigquery-loader]
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "GCP_PROJECT_ID=${GCP_PROJECT_ID}"
       - "BIGQUERY_DATASET=${BIGQUERY_DATASET}"
       - "BIGQUERY_TABLE=${BIGQUERY_TABLE}"
@@ -270,12 +278,12 @@ services:
       - "./snowbridge:/snowbridge"
     profiles: [snowbridge]
     environment:
+      - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
       - "AWS_REGION=ap-southeast-2"
       - "AWS_ACCESS_KEY_ID=localstack"
       - "AWS_SECRET_ACCESS_KEY=doesntmatter"
       - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
       - "SNOWBRIDGE_CONFIG_FILE=/snowbridge/config.hcl"
-      - "ACCEPT_LIMITED_USE_LICENSE=yes"
       - "START_TIMESTAMP=${START_TIMESTAMP}"
     extra_hosts:
       - "localhost.localstack.cloud:host-gateway"
