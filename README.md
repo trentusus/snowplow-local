@@ -1,10 +1,10 @@
-# Snowplow-local
+# Snowplow Local
 
 ## Background
 
-snowplow-local is designed to provide a fast, easy to use local development environment that spins up an entire Snowplow pipeline that more closely resembles a production (AWS) environment by mocking out these services using [Localstack](https://www.localstack.cloud/).
+Snowplow Local is designed to provide a fast, easy to use local development environment that spins up an entire Snowplow pipeline that more closely resembles a production (AWS) environment by mocking out these services using [Localstack](https://www.localstack.cloud/).
 
-## What can you do with snowplow-local?
+## What can you do with Snowplow Local?
 
 - Develop and test new schemas and enrichments
 - Test out new loaders (e.g., Snowflake, BigQuery, Lake Loader)
@@ -18,6 +18,11 @@ snowplow-local is designed to provide a fast, easy to use local development envi
 ## Licensing
 
 This software is licensed under the Snowplow Limited Use License Agreement. For more information please see the [LICENSE.md](LICENSE.md) file. For a more comprehensive list of Snowplow licensing please see [this document](https://docs.snowplow.io/docs/contributing/copyright-license/#source-available-components).
+
+## Disclaimer
+
+>[!IMPORTANT]
+>This is not an officially supported Snowplow product.
 
 ## Getting started
 
@@ -165,7 +170,7 @@ Micro provides a simple API endpoint that allows for you to assert against what 
 
 [Snowplow Mini](https://docs.snowplow.io/docs/pipeline-components-and-applications/snowplow-mini/overview/) is a more fully fledged version of the Snowplow pipeline that typically runs as an image on a virtual machine. It includes additional components - like it's own Iglu registry and messaging bus (NSQ) and stores data in an Opensearch cluster allowing it to persist between restarts.
 
-- What makes snowplow-local different?
+- What makes Snowplow Local different?
 
 Snowplow local aims to recreate some of the best parts of Micro and Mini whilst enabling warehouse loading. Similar to Mini it runs a full version of the collector, enricher and other Snowplow components as well as optional loaders.
 
@@ -181,6 +186,8 @@ Finally, the local version also includes full support for incomplete events as p
 
 The KCL, specifically within enrich has a pesty habit of being slow to 'steal' leases and start processing data on initial startup. Although events can be collected immediately it may take up to 60 seconds on subsequent startups for enrich to start enriching events. Once this period has passed everything works as per normal.
 
-## Disclaimer
 
-Disclaimer: This is not an officially supported Snowplow product.
+
+## Copyright and license
+
+Snowplow is copyright 2024 Snowplow Analytics Ltd.
