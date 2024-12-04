@@ -9,6 +9,7 @@ services:
       # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
       - DEBUG=${DEBUG:-0}
       - LS_LOG=debug # set to 'trace' for verbose
+      - MAIN_CONTAINER_NAME=localstack-main
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
@@ -227,16 +228,19 @@ services:
       - enrich
       - iglu-server
     volumes:
+      - "./collector/config.hocon:/snowplow/collector/config.hocon"
       - "./loaders/lake_loader_config.hocon:/loaders/lake_loader_config.hocon"
       - "./iglu-client:/snowplow/iglu-client"
     profiles: [lake-loader]
     environment:
       - "ACCEPT_LICENSE=${ACCEPT_LICENSE}"
-      - "AWS_ACCESS_KEY_ID=localstack"
-      - "AWS_SECRET_ACCESS_KEY=doesntmatter"
+      - "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
+      - "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
       - "AWS_REGION=ap-southeast-2"
-      - "AWS_ENDPOINT_S3=http://localhost.localstack.cloud:4566"
-      - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
+#      - "AWS_ACCESS_KEY_ID=localstack"
+#      - "AWS_SECRET_ACCESS_KEY=doesntmatter"
+#      - "AWS_ENDPOINT_S3=http://localhost.localstack.cloud:4566"
+#      - "AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566"
 
     extra_hosts:
       - "localhost.localstack.cloud:host-gateway"
